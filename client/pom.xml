@@ -104,7 +104,7 @@
 
 		<dependency>
 			<groupId>io.synclite</groupId>
-			<artifactId>synclite-logger-extended</artifactId>
+			<artifactId>synclite-logger</artifactId>
 			<version>${synclite-logger.version}</version>
 		</dependency>
 
