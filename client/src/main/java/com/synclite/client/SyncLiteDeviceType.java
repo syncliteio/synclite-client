@@ -1,0 +1,16 @@
+package com.synclite.client;
+
+public enum SyncLiteDeviceType {
+	SQLITE,
+	SQLITE_APPENDER,
+	DUCKDB,
+	DUCKDB_APPENDER,
+	DERBY,
+	DERBY_APPENDER,
+	H2,
+	H2_APPENDER,
+	HYPERSQL,
+	HYPERSQL_APPENDER,
+	STREAMING,
+	TELEMETRY,
+}
