@@ -8,4 +8,4 @@ else
   JAVA_CMD="java"
 fi
 
-"$JAVA_CMD" -classpath "$SCRIPT_DIR/synclite-client-2023.08.26.jar:$SCRIPT_DIR/*" com.synclite.client.Main $1 $2 $3 $4 $5
+"$JAVA_CMD" -classpath "$SCRIPT_DIR/synclite-client-2023.08.26.jar:$SCRIPT_DIR/*" com.synclite.client.Main $1 $2 $3 $4 $5 $6 $7 $8 $9
