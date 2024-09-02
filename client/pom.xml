@@ -22,30 +22,6 @@
 
 		<plugins>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<version>3.1.2</version>
-				<executions>
-					<execution>
-						<id>copy-single-dependency</id>
-						<phase>package</phase>
-						<goals>
-							<goal>copy</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>io.synclite</groupId>
-									<artifactId>synclite-logger</artifactId>
-									<version>${synclite-logger.version}</version>
-									<outputDirectory>${project.build.directory}</outputDirectory>
-								</artifactItem>
-							</artifactItems>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
 				<version>3.2.0</version>
 				<executions>
@@ -100,8 +76,7 @@
 		</plugins>
 	</build>
 
-	<dependencies>
-	
+	<dependencies>	
 		<!-- https://mvnrepository.com/artifact/org.zeromq/jeromq -->
 		<dependency>
 			<groupId>org.zeromq</groupId>
