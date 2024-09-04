@@ -361,9 +361,9 @@ public class Main {
 		jsonRequest.put("sql", sql);
 
 		JSONObject jsonResponse = sendRquest(jsonRequest);
-		if (jsonResponse.has("result")) {
-			Object result = jsonResponse.get("result");
-			if (result instanceof JSONArray) {
+		if (jsonResponse.has("resultset")) {
+			Object result = jsonResponse.get("resultset");
+			if ((result != JSONObject.NULL) && (result instanceof JSONArray)) {
 				JSONArray resultSet = (JSONArray) result;
 				List<String> columnNames = new ArrayList<String>();
 				if (resultSet.length() > 0) {
@@ -388,7 +388,7 @@ public class Main {
 				System.out.println(resultSet.length() + " rows");
 
 			} else {
-				System.out.println(result);
+				//System.out.println(result);
 			}
 		} else {
 			System.out.println(jsonResponse.getString("message"));
