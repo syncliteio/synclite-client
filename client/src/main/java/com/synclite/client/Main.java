@@ -55,6 +55,7 @@ public class Main {
 	static String deviceName = "";
 	static boolean embeddedMode = true;
 	static String serverAddress = null;
+	private static String currentTxnHandle = null;
 
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 
@@ -359,8 +360,21 @@ public class Main {
 		jsonRequest.put("db-path", dbPath);
 		jsonRequest.put("synclite-logger-config", confPath);
 		jsonRequest.put("sql", sql);
+		if (currentTxnHandle != null) {
+			jsonRequest.put("txn-handle", currentTxnHandle);
+		}
 
 		JSONObject jsonResponse = sendRquest(jsonRequest);
+		
+		if (jsonResponse.has("txn-handle")) {
+			currentTxnHandle = jsonResponse.get("txn-handle").toString();
+		}
+		
+		//If the request was a "commit" or "rollback" then reset currentTxnHandle		
+		if (sql.strip().equalsIgnoreCase("commit") || sql.strip().equalsIgnoreCase("rollback")) {
+			currentTxnHandle = null;
+		}
+		
 		if (jsonResponse.has("resultset")) {
 			Object result = jsonResponse.get("resultset");
 			if ((result != JSONObject.NULL) && (result instanceof JSONArray)) {
