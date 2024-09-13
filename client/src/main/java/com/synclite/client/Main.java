@@ -16,8 +16,13 @@
 
 package com.synclite.client;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -29,22 +34,27 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
-import org.hsqldb.lib.OrderedHashSet;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.zeromq.ZContext;
-import org.zeromq.ZMQ;
 
-import io.synclite.logger.*;
+import io.synclite.logger.Derby;
+import io.synclite.logger.DerbyAppender;
+import io.synclite.logger.DuckDB;
+import io.synclite.logger.DuckDBAppender;
+import io.synclite.logger.H2;
+import io.synclite.logger.H2Appender;
+import io.synclite.logger.HyperSQL;
+import io.synclite.logger.HyperSQLAppender;
+import io.synclite.logger.SQLite;
+import io.synclite.logger.SQLiteAppender;
+import io.synclite.logger.Streaming;
+import io.synclite.logger.SyncLiteStatement;
+import io.synclite.logger.Telemetry;
 
 public class Main {
 	private static boolean shutdownInProgress = false;
@@ -127,6 +137,7 @@ public class Main {
 					String argVal = args[i + 1];
 
 					switch (argName) {
+					case "--db-type":
 					case "--device-type":
 						deviceType = SyncLiteDeviceType.valueOf(argVal);
 						if (deviceType == null) {
@@ -142,11 +153,13 @@ public class Main {
 						}
 						break;
 
+					case "--db-name":	
 					case "--device-name":
 						deviceName = argVal;
 						break;
 
-					case "--server":
+					case "--server":	
+					case "--synclite-db":
 						serverAddress = argVal;
 						// validate if it connects.
 						//
@@ -365,16 +378,16 @@ public class Main {
 		}
 
 		JSONObject jsonResponse = sendRquest(jsonRequest);
-		
+
 		if (jsonResponse.has("txn-handle")) {
 			currentTxnHandle = jsonResponse.get("txn-handle").toString();
 		}
-		
+
 		//If the request was a "commit" or "rollback" then reset currentTxnHandle		
 		if (sql.strip().equalsIgnoreCase("commit") || sql.strip().equalsIgnoreCase("rollback")) {
 			currentTxnHandle = null;
 		}
-		
+
 		if (jsonResponse.has("resultset")) {
 			Object result = jsonResponse.get("resultset");
 			if ((result != JSONObject.NULL) && (result instanceof JSONArray)) {
@@ -410,22 +423,35 @@ public class Main {
 	}
 
 	private static JSONObject sendRquest(JSONObject jsonRequest) throws SQLException {
-		try (ZContext context = new ZContext()) {
-			// Create a ZMQ Request socket
-			ZMQ.Socket socket = context.createSocket(ZMQ.REQ);
-			socket.connect(serverAddress);
+		try {
+			URL url = new URL(serverAddress);
 
-			// Send the request
+			// Open connection
+			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+			// Set request method to POST
+			conn.setRequestMethod("POST");
+			conn.setDoOutput(true);
+			conn.setRequestProperty("Content-Type", "application/json");
+
 			String requestString = jsonRequest.toString();
-			socket.send(requestString.getBytes(ZMQ.CHARSET), 0);
+			// Write message to request body
+			try (OutputStream os = conn.getOutputStream()) {
+				os.write(requestString.getBytes());
+				os.flush();
+			}
 
-			// Receive the response
-			String responseString = socket.recvStr(0);
-			//System.out.println("Response: " + responseString);
+			StringBuilder response = new StringBuilder();
+			try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
+				String responseLine;
+				while ((responseLine = br.readLine()) != null) {
+					response.append(responseLine);
+				}
+			}
 
-			// Parse and print the result of SQL query from the response
-			JSONObject jsonResponse = new JSONObject(responseString);
+			JSONObject jsonResponse = new JSONObject(response.toString());
 			return jsonResponse;
+
 		} catch (Exception e) {
 			throw new SQLException("Failed to connect to specified server : " + serverAddress + " : " + e.getMessage(), e);
 		}
@@ -449,6 +475,9 @@ public class Main {
 		System.out.println("DB : " + dbPath);
 		System.out.println("Device Type : " + deviceType);
 		System.out.println("Logger Config File : " + confPath);
+		if (serverAddress != null) {
+			System.out.println("SyncLiteDB : " + serverAddress);
+		}
 		System.out.println("=========================================================================");
 		System.out.println();
 	}
@@ -520,12 +549,22 @@ public class Main {
 	private static void usage() throws SQLException {
 		if (isWindows()) {
 			System.out.println("Usage1 : synclite.bat");
+			System.out.println();
 			System.out.println(
-					"Usage2 : synclite.bat <path-to-synclite-database-file> --device-type <SQLITE|DUCKDB|DERBY|H2|HYPERSQL|STREAMING|TELEMETRY|SQLITE_APPENDER|DUCKDB_APPENDER|DERBY_APPENDER|H2_APPENDER|HYPERSQL_APPENDER> --synclite-logger-config <path-to-synclite-logger-config-file> --device-name <device-name> --server <synclitedb host:port>");
+					"Usage2 : synclite.bat <path-to-synclite-database-file> --device-type <SQLITE|DUCKDB|DERBY|H2|HYPERSQL|STREAMING|TELEMETRY|SQLITE_APPENDER|DUCKDB_APPENDER|DERBY_APPENDER|H2_APPENDER|HYPERSQL_APPENDER> --synclite-logger-config <path-to-synclite-logger-config-file> --device-name <device-name>");
+			System.out.println();
+			System.out.println(
+					"Usage3 : synclite.bat <path-to-synclite-database-file> --db-type <SQLITE|DUCKDB|DERBY|H2|HYPERSQL|STREAMING|TELEMETRY|SQLITE_APPENDER|DUCKDB_APPENDER|DERBY_APPENDER|H2_APPENDER|HYPERSQL_APPENDER> --synclite-logger-config <path-to-synclite-logger-config-file> --db-name <device-name> --synclite-db <synclitedb host:port>");
+			
 		} else {
 			System.out.println("Usage1 : synclite.sh");
+			System.out.println();
 			System.out.println(
 					"Usage2 : synclite.sh <path-to-synclite-database-file> --device-type <SQLITE|DUCKDB|DERBY|H2|HYPERSQL|STREAMING|TELEMETRY|SQLITE_APPENDER|DUCKDB_APPENDER|DERBY_APPENDER|H2_APPENDER|HYPERSQL_APPENDER> --synclite-logger-config <path-to-synclite-logger-config-file> --device-name <device-name> --server <synclitedb host:port>");
+			System.out.println();
+			System.out.println(
+					"Usage3 : synclite.sh <path-to-synclite-database-file> --db-type <SQLITE|DUCKDB|DERBY|H2|HYPERSQL|STREAMING|TELEMETRY|SQLITE_APPENDER|DUCKDB_APPENDER|DERBY_APPENDER|H2_APPENDER|HYPERSQL_APPENDER> --synclite-logger-config <path-to-synclite-logger-config-file> --db-name <device-name> --synclite-db <synclitedb host:port>");
+			
 		}
 		System.exit(0);
 	}
@@ -562,8 +601,7 @@ public class Main {
 		confBuilder.append(newLine);
 		confBuilder.append("#sftp:password=<password>");
 		confBuilder.append(newLine);
-		confBuilder.append(
-				"#sftp:remote-data-stage-directory=<remote data directory name which will host the device directory>");
+		confBuilder.append("#sftp:remote-data-stage-directory=<remote data directory name which will host the device directory>");
 		confBuilder.append(newLine);
 		confBuilder.append(newLine);
 		confBuilder.append("#==============MinIO  Configuration=================");
@@ -651,25 +689,25 @@ public class Main {
 
 
 	private static boolean isServerUp(String serverAddress) {
-		try (ZContext context = new ZContext()) {
-			// Create a ZMQ Request socket to check server status
-			ZMQ.Socket socket = context.createSocket(ZMQ.REQ);
-			socket.setReceiveTimeOut(10000); // Set timeout for 10 seconds
-			socket.connect(serverAddress);
-			try {
-				socket.send("ping", 0); 
-				String response = socket.recvStr(0);
-				if (response != null && !response.isEmpty()) {
-					return true; 
-				}
-			} catch (Exception e) {
-				System.out.println("Attempt to connect to specified server failed: " + e.getMessage());
-			} finally {
-				socket.close();
+		try {
+			URL url = new URL(serverAddress);
+
+			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+			conn.setRequestMethod("GET");
+
+			conn.setConnectTimeout(10000);
+			conn.setReadTimeout(10000);
+
+			int responseCode = conn.getResponseCode();
+
+			if (responseCode == HttpURLConnection.HTTP_OK) {
+				return true;
 			}
 		} catch (Exception e) {
+			// Handle exceptions, like timeouts or server being down
 			System.out.println("Attempt to connect to specified server failed: " + e.getMessage());
 		}
-		return false; 
+		return false;
 	}
 }
