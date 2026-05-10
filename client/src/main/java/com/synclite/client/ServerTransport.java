@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -30,13 +31,7 @@ final class ServerTransport {
 		jsonRequest.put("protocol-version", RuntimeContext.PROTOCOL_VERSION);
 		jsonRequest.put("db-type", runtime.deviceType.toString());
 		jsonRequest.put("db-name", runtime.deviceName);
-		if (runtime.redactLocalPaths) {
-			jsonRequest.put("db-path", runtime.dbPath.getFileName().toString());
-			jsonRequest.put("synclite-logger-config", runtime.confPath.getFileName().toString());
-		} else {
-			jsonRequest.put("db-path", runtime.dbPath.toString());
-			jsonRequest.put("synclite-logger-config", runtime.confPath.toString());
-		}
+		jsonRequest.put("synclite-logger-options", readLoggerOptions(runtime));
 		jsonRequest.put("sql", sql);
 		jsonRequest.put("resultset-pagination-size", runtime.resultsetPaginationSize);
 		jsonRequest.put("resultset-include-metadata", runtime.resultsetIncludeMetadata);
@@ -277,6 +272,40 @@ final class ServerTransport {
 			if (conn != null) {
 				conn.disconnect();
 			}
+		}
+	}
+
+	private static JSONObject readLoggerOptions(RuntimeContext runtime) throws SQLException {
+		try {
+			if (runtime.confPath == null) {
+				throw new SQLException("synclite-logger-config path is not set");
+			}
+			if (!Files.exists(runtime.confPath)) {
+				throw new SQLException("synclite-logger-config file does not exist: " + runtime.confPath);
+			}
+
+			JSONObject options = new JSONObject();
+			List<String> lines = Files.readAllLines(runtime.confPath, StandardCharsets.UTF_8);
+			for (String line : lines) {
+				String trimmed = line == null ? "" : line.trim();
+				if (trimmed.isEmpty() || trimmed.startsWith("#")) {
+					continue;
+				}
+				int separatorIndex = trimmed.indexOf('=');
+				if (separatorIndex <= 0) {
+					continue;
+				}
+				String key = trimmed.substring(0, separatorIndex).trim();
+				String value = trimmed.substring(separatorIndex + 1).trim();
+				if (!key.isEmpty()) {
+					options.put(key, value);
+				}
+			}
+			return options;
+		} catch (SQLException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new SQLException("Failed to parse synclite-logger-config file", e);
 		}
 	}
 
