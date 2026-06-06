@@ -27,7 +27,7 @@ synclite-cli.sh
 # With explicit options
 synclite-cli.sh <path/to/db/file> \
     --device-type SQLITE \
-    --synclite-logger-config <path/to/synclite_logger.conf>
+    --synclite-logger-config <path/to/synclite.conf>
 ```
 
 ### Remote mode (via SyncLite DB)
@@ -35,7 +35,7 @@ synclite-cli.sh <path/to/db/file> \
 ```bash
 synclite-cli.sh <path/to/db/file> \
     --device-type SQLITE \
-    --synclite-logger-config <path/to/synclite_logger.conf> \
+    --synclite-logger-config <path/to/synclite.conf> \
     --server http://localhost:5555
 ```
 

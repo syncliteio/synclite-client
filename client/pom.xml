@@ -86,7 +86,7 @@
 
 		<dependency>
 			<groupId>io.synclite</groupId>
-			<artifactId>synclite-logger</artifactId>
+			<artifactId>synclite</artifactId>
 			<version>${synclite-logger.version}</version>
 		</dependency>
 
