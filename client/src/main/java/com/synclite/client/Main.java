@@ -25,23 +25,23 @@ import java.sql.Statement;
 import java.util.Locale;
 import java.util.Scanner;
 
-import io.synclite.logger.Derby;
-import io.synclite.logger.DerbyAppender;
-import io.synclite.logger.DerbyStore;
-import io.synclite.logger.DuckDB;
-import io.synclite.logger.DuckDBAppender;
-import io.synclite.logger.DuckDBStore;
-import io.synclite.logger.H2;
-import io.synclite.logger.H2Appender;
-import io.synclite.logger.H2Store;
-import io.synclite.logger.HyperSQL;
-import io.synclite.logger.HyperSQLAppender;
-import io.synclite.logger.HyperSQLStore;
-import io.synclite.logger.SQLite;
-import io.synclite.logger.SQLiteAppender;
-import io.synclite.logger.SQLiteStore;
-import io.synclite.logger.Streaming;
-import io.synclite.logger.SyncLiteStatement;
+import io.synclite.Derby;
+import io.synclite.DerbyAppender;
+import io.synclite.DerbyStore;
+import io.synclite.DuckDB;
+import io.synclite.DuckDBAppender;
+import io.synclite.DuckDBStore;
+import io.synclite.H2;
+import io.synclite.H2Appender;
+import io.synclite.H2Store;
+import io.synclite.HyperSQL;
+import io.synclite.HyperSQLAppender;
+import io.synclite.HyperSQLStore;
+import io.synclite.SQLite;
+import io.synclite.SQLiteAppender;
+import io.synclite.SQLiteStore;
+import io.synclite.Streaming;
+import io.synclite.SyncLiteStatement;
 
 public class Main {
 	private static boolean shutdownInProgress = false;
@@ -150,7 +150,7 @@ public class Main {
 		return jdbcUrl;
 	}
 
-	private static String buildJdbcUrl(io.synclite.logger.DeviceType deviceType, Path dbPath) throws SQLException {
+	private static String buildJdbcUrl(io.synclite.DeviceType deviceType, Path dbPath) throws SQLException {
 		switch (deviceType.name()) {
 		case "SQLITE":
 		case "SQLITE_APPENDER":

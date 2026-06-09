@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-import io.synclite.logger.DeviceType;
+import io.synclite.DeviceType;
 
 final class OutputUtil {
 	private OutputUtil() {
