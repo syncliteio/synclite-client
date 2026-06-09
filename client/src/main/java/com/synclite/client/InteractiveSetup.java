@@ -8,7 +8,7 @@ import java.sql.SQLException;
 import java.util.Locale;
 import java.util.Scanner;
 
-import io.synclite.logger.DeviceType;
+import io.synclite.DeviceType;
 
 final class InteractiveSetup {
 	private InteractiveSetup() {

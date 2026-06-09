@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.synclite.logger.DeviceType;
+import io.synclite.DeviceType;
 
 final class RuntimeContext {
 	static final DeviceType DEFAULT_DEVICE_TYPE = DeviceType.SQLITE;

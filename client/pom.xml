@@ -84,6 +84,19 @@
 			<version>20240303</version>
 		</dependency>
 
+		<!-- https://mvnrepository.com/artifact/org.duckdb/duckdb_jdbc -->
+		<!--
+			synclite-logger-java marks duckdb_jdbc as 'provided' so its
+			~50MB native libs stay out of the fat jar; consumers that
+			hit io.synclite.SyncLite (which Class.forName's the driver in
+			its static initializer) must declare it themselves.
+		-->
+		<dependency>
+		    <groupId>org.duckdb</groupId>
+		    <artifactId>duckdb_jdbc</artifactId>
+		    <version>1.5.2.0</version>
+		</dependency>
+
 		<dependency>
 			<groupId>io.synclite</groupId>
 			<artifactId>synclite</artifactId>
