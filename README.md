@@ -19,13 +19,13 @@ It supports two connection modes:
 
 ```bash
 # Windows — uses default DB at %USERPROFILE%\synclite\job1\db\test.db (SQLITE)
-synclite-cli.bat
+synclite-client.bat
 
 # Linux / macOS
-synclite-cli.sh
+synclite-client.sh
 
 # With explicit options
-synclite-cli.sh <path/to/db/file> \
+synclite-client.sh <path/to/db/file> \
     --device-type SQLITE \
     --synclite-logger-config <path/to/synclite.conf>
 ```
@@ -33,7 +33,7 @@ synclite-cli.sh <path/to/db/file> \
 ### Remote mode (via SyncLite DB)
 
 ```bash
-synclite-cli.sh <path/to/db/file> \
+synclite-client.sh <path/to/db/file> \
     --device-type SQLITE \
     --synclite-logger-config <path/to/synclite.conf> \
     --server http://localhost:5555
@@ -48,7 +48,7 @@ When `--server` is specified the client sends all SQL over HTTP to the SyncLite 
 ## Interactive Session Example
 
 ```
-$ synclite-cli.sh ~/synclite/db/myapp.db --device-type SQLITE
+$ synclite-client.sh ~/synclite/db/myapp.db --device-type SQLITE
 Connected to SyncLite SQLITE device: /home/alice/synclite/db/myapp.db
 Type SQL statements, or 'exit' to quit.
 
@@ -73,10 +73,10 @@ All statements are not only executed on the local embedded database but also cap
 
 ```bash
 cd synclite-client/client
-mvn -Drevision=oss clean install
+mvn -Drevision=1.0.0 clean install
 ```
 
-Built artifacts under `client/target/`: `synclite-cli.bat`, `synclite-cli.sh`, `synclite-logger.conf` (sample config).
+Built artifacts under `client/target/`: `synclite-client.bat`, `synclite-client.sh`, `synclite_logger.conf` (sample config).
 
 ## Related Components
 
