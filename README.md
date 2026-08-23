@@ -73,7 +73,7 @@ All statements are not only executed on the local embedded database but also cap
 
 ```bash
 cd synclite-client/client
-mvn -Drevision=1.0.0 clean install
+mvn -Drevision=1.1.0 clean install
 ```
 
 Built artifacts under `client/target/`: `synclite-client.bat`, `synclite-client.sh`, `synclite_logger.conf` (sample config).
